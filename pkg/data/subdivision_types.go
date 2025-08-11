@@ -1,6 +1,6 @@
 package data 
 
-type SubDivision struct {
+type Subdivision struct {
 	CountryCode string
 	Code        string
 	Name        string

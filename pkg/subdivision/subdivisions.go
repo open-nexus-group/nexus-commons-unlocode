@@ -1,23 +1,32 @@
-//go:generate ../generator/generator.go -output=../unlocode/data.go SubDiv.csv UNLOC-1.csv UNLOC-2.csv UNLOC-3.csv UNLOC-4.csv
+//go:generate ../../generator/generator.go --type=subdivision --files=2024-2-SubDiv.csv
 package subdivision 
 
 import (
-	"log"
 	"gitlab.com/open-agent-nexus/nexus-commons-unlocode/pkg/data"
 )
 
 
 type SubDivCollection struct {
-	subdivisions []data.SubDivision
+	subdivisions []data.Subdivision
+	subdivisionCodeMap map[string]data.Subdivision
 }
 
-func (s *SubDivCollection) GetByName() {
-	log.Println(s.subdivisions)
+func CreateSubdivisionMapByCode(subdivisions []data.Subdivision) map[string]data.Subdivision {
+	subdivisionMap := make(map[string]data.Subdivision, len(subdivisions)) // Pre-allocate map capacity
+	for _, sd := range subdivisions{
+		subdivisionMap[sd.Code] = sd
+	}
+	return subdivisionMap
+}
+
+func (collection *SubDivCollection) GetByCode(code string) data.Subdivision {
+	return collection.subdivisionCodeMap[code]
 }
 
 func NewSubDivisionCollection() *SubDivCollection {
 	collection := SubDivCollection{
 		subdivisions: data.Subdivisions,
+		subdivisionCodeMap: CreateSubdivisionMapByCode(data.Subdivisions),
 	}
 	return &collection
 }
