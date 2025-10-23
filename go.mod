@@ -1,4 +1,4 @@
-module gitlab.com/open-agent-nexus/nexus-commons-unlocode
+module github.com/open-nexus-group/nexus-commons-unlocode 
 
 go 1.24.5
 

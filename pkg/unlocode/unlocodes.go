@@ -3,11 +3,12 @@ package unlocode
 
 import (
 	"errors"
-	"github.com/hbollon/go-edlib"
-	"gitlab.com/open-agent-nexus/nexus-commons-unlocode/pkg/data"
 	"maps"
 	"slices"
 	"strings"
+
+	"github.com/hbollon/go-edlib"
+	"github.com/open-nexus-group/nexus-commons-unlocode/pkg/data"
 )
 
 var (
