@@ -1,4 +1,4 @@
-package data 
+package data
 
 type Subdivision struct {
 	CountryCode string
@@ -6,7 +6,6 @@ type Subdivision struct {
 	Name        string
 	Category    Category
 }
-
 
 type Category string
 
@@ -112,4 +111,3 @@ const (
 	VOIVODSHIP                                         Category = "Voivodship"
 	WARD                                               Category = "Ward"
 )
-

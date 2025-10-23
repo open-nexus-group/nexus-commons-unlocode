@@ -39,7 +39,7 @@ const (
 	UNSET_STATUS                                     Status = ""
 	UNKNOWN_STATUS_AM                                Status = "AM"
 	UNKNOWN_STATUS_UR                                Status = "UR"
-	UNKNOWN_STATUS_AQ                                 Status = "AQ"
+	UNKNOWN_STATUS_AQ                                Status = "AQ"
 	GOVERNMENT_AGENCY_APPROVED                       Status = "AA" // Approved by competent national government agency
 	CUSTOMS_AUTHORITY_APPROVED                       Status = "AC" //	Approved by Customs Authority
 	NATIONAL_FACILITATION_BODY_APPROVED              Status = "AF" //	Approved by national facilitation body

@@ -51,7 +51,7 @@ var (
 
 const (
 	TYPE_SUBDIVISION = "subdivision"
-	TYPE_UNLOCODE= "unlocode"
+	TYPE_UNLOCODE    = "unlocode"
 )
 
 func main() {
@@ -95,7 +95,7 @@ func main() {
 		outputFile = fmt.Sprintf("%s/%s", defaultOutputPath, defaultSubdivisionOutputFileName)
 		subdivLiteral := processSubdivFiles(fileNames, outputFile)
 		f.Var().Id("Subdivisions").Op("=").Add(subdivLiteral)
-	case TYPE_UNLOCODE: 
+	case TYPE_UNLOCODE:
 		outputFile = fmt.Sprintf("%s/%s", defaultOutputPath, defaultUnLocodeOutputFileName)
 		unlocodeLiteral := processUnlocodeFiles(fileNames, outputFile)
 		f.Var().Id("Unlocodes").Op("=").Add(unlocodeLiteral)
