@@ -4,14 +4,15 @@ import (
 	"encoding/csv"
 	"flag"
 	"fmt"
-	"github.com/dave/jennifer/jen"
-	. "github.com/dave/jennifer/jen"
 	"io"
 	"log"
 	"os"
 	"path"
 	"strconv"
 	"strings"
+
+	"github.com/dave/jennifer/jen"
+	. "github.com/dave/jennifer/jen"
 )
 
 var FunctionTypeToStringMap = map[string]string{
@@ -45,13 +46,13 @@ var StatusToStringMap = map[string]string{
 }
 
 var (
-	typeName = flag.String("type", "", "type name that should be processed; must be set to either subdiv or unlocode")
+	typeName = flag.String("type", "", "type name that should be processed; must be set to either subdivision or unlocode")
 	files    = flag.String("files", "", "comma-separated list of file names; must be set; default source directory srcdir/generator/")
 )
 
 const (
 	TYPE_SUBDIVISION = "subdivision"
-	TYPE_UNLOCODE= "unlocode"
+	TYPE_UNLOCODE    = "unlocode"
 )
 
 func main() {
@@ -95,7 +96,7 @@ func main() {
 		outputFile = fmt.Sprintf("%s/%s", defaultOutputPath, defaultSubdivisionOutputFileName)
 		subdivLiteral := processSubdivFiles(fileNames, outputFile)
 		f.Var().Id("Subdivisions").Op("=").Add(subdivLiteral)
-	case TYPE_UNLOCODE: 
+	case TYPE_UNLOCODE:
 		outputFile = fmt.Sprintf("%s/%s", defaultOutputPath, defaultUnLocodeOutputFileName)
 		unlocodeLiteral := processUnlocodeFiles(fileNames, outputFile)
 		f.Var().Id("Unlocodes").Op("=").Add(unlocodeLiteral)
@@ -110,9 +111,29 @@ func main() {
 	}
 }
 
+func rowCount(fileName string) (sliceLength int) {
+	log.Printf("Counting lines file: %s", fileName)
+	c, err := os.ReadFile(fileName)
+	if err != nil {
+		log.Fatalf("Failed processing file %v with error: %v", fileName, err)
+	}
+	csvReader := csv.NewReader(strings.NewReader(string(c)))
+	filedata, err := csvReader.ReadAll()
+	if err != nil {
+		log.Println(err)
+	}
+	sliceLength = len(filedata)
+	log.Printf("Slice length: %v", sliceLength)
+	return sliceLength
+}
+
 func processSubdivFiles(fileNames []string, outputFile string) *jen.Statement {
 	log.Printf("Processing subdiv files %+q into %s", fileNames, outputFile)
-	return Index().Id("Subdivision").ValuesFunc(func(g *Group) {
+	var sliceLength int
+	for _, fileName := range fileNames {
+		sliceLength = sliceLength + rowCount(fileName)
+	}
+	return Index(Lit(sliceLength)).Id("Subdivision").ValuesFunc(func(g *Group) {
 		for _, fileName := range fileNames {
 			log.Printf("Reading file: %s", fileName)
 			b, err := os.ReadFile(fileName)
@@ -144,7 +165,12 @@ func processSubdivFiles(fileNames []string, outputFile string) *jen.Statement {
 
 func processUnlocodeFiles(fileNames []string, outputFile string) *jen.Statement {
 	log.Printf("Processing unlocode files %+q into %s", fileNames, outputFile)
-	return Index().Id("Unlocode").ValuesFunc(func(g *Group) {
+	var sliceLength int
+	for _, fileName := range fileNames {
+		sliceLength = sliceLength + rowCount(fileName)
+	}
+
+	return Index(Lit(sliceLength)).Id("Unlocode").ValuesFunc(func(g *Group) {
 		for _, fileName := range fileNames {
 			log.Printf("Reading file: %s", fileName)
 			b, err := os.ReadFile(fileName)
