@@ -21,6 +21,8 @@ type UnLocodeRepository interface {
 	GetByName(name string) (result data.Unlocode, err error)
 	FindByName(name string, amount int) (result []data.Unlocode, err error)
 	FindByLocode(code string, amount int) (result []data.Unlocode, err error)
+	FindByNameAndProximity(name string, amount int, minSimilarity float32) (result []data.Unlocode, err error)
+	FindByNameAndProximityWithFunction(name string, amount int, minSimilarity float32, function data.Function) (result []data.Unlocode, err error)
 }
 
 type UnLocodeCollection struct {
@@ -100,4 +102,79 @@ func (c *UnLocodeCollection) FindByName(name string, amount int) (results []data
 		results = append(results, res)
 	}
 	return results, nil
+}
+
+func (c *UnLocodeCollection) FindByNameAndProximity(name string, amount int, minSimilarity float32) (results []data.Unlocode, err error) {
+	res, err := edlib.FuzzySearchSetThreshold(name, c.nameKeys, amount, minSimilarity, edlib.Levenshtein)
+	if err != nil {
+		panic("Can not find by name and proximity")
+	}
+
+	sortedNames := sortByProximity(name, res)
+
+	for _, v := range sortedNames {
+		for _, unlocode := range c.unlocodes {
+			if strings.ToLower(strings.TrimSpace(unlocode.NameWoDiacritics)) == v {
+				results = append(results, unlocode)
+			}
+		}
+	}
+	return results, nil
+}
+
+func (c *UnLocodeCollection) FindByNameAndProximityWithFunction(name string, amount int, minSimilarity float32, function data.Function) (results []data.Unlocode, err error) {
+	res, err := edlib.FuzzySearchSetThreshold(name, c.nameKeys, amount, minSimilarity, edlib.Levenshtein)
+	if err != nil {
+		panic("Can not find by name and proximity with function")
+	}
+
+	sortedNames := sortByProximity(name, res)
+
+	for _, v := range sortedNames {
+		for _, unlocode := range c.unlocodes {
+			if strings.ToLower(strings.TrimSpace(unlocode.NameWoDiacritics)) == v {
+				if unlocode.Function != nil {
+					for _, f := range *unlocode.Function {
+						if f == function {
+							results = append(results, unlocode)
+							break
+						}
+					}
+				}
+			}
+		}
+	}
+	return results, nil
+}
+
+/*
+Sorts the matches by proximity to the search term.
+The higher the score, the more similar the match is to the search term.
+*/
+func sortByProximity(searchTerm string, matches []string) []string {
+	type scoredResult struct {
+		name  string
+		score float32
+	}
+	var scored []scoredResult
+	for _, v := range matches {
+		similarity, _ := edlib.StringsSimilarity(strings.ToLower(searchTerm), v, edlib.Levenshtein)
+		scored = append(scored, scoredResult{name: v, score: similarity})
+	}
+
+	slices.SortFunc(scored, func(a, b scoredResult) int {
+		if a.score > b.score {
+			return -1
+		}
+		if a.score < b.score {
+			return 1
+		}
+		return 0
+	})
+
+	result := make([]string, len(scored))
+	for i, s := range scored {
+		result[i] = s.name
+	}
+	return result
 }
