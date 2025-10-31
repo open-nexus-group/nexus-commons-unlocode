@@ -3,7 +3,6 @@ package unlocode
 
 import (
 	"errors"
-	"log"
 	"maps"
 	"slices"
 	"strings"
@@ -132,7 +131,6 @@ func (c *UnLocodeCollection) FindByNameAndProximityWithFunction(name string, amo
 	}
 
 	sortedNames := sortByProximity(name, res)
-	log.Printf("sortedNames: %+v", sortedNames)
 
 	for _, v := range sortedNames {
 		for _, unlocode := range c.unlocodes {
