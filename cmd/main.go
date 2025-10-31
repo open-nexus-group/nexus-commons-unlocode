@@ -39,11 +39,17 @@ func main() {
 	}
 	log.Printf("found by Name and Proximity: Hamburg: %v", foundByNameAndProximity)
 
-	foundByNameAndProximityWithFunction, err := locodeCollection.FindByNameAndProximityWithFunction("Hamburg", 3, 0.8, data.PORT)
+	foundByNameAndProximityWithFunction, err := locodeCollection.FindByNameAndProximityWithFunction("Hambur", 5, 0.5, data.PORT)
 	if err != nil {
 		log.Printf("Could not findByNameAndProximityWithFunction: %v", err)
 	}
 	log.Printf("found by Name and Proximity with Function: Hamburg: %v", foundByNameAndProximityWithFunction)
+	foundBySearchLikeWithFunction, err := locodeCollection.SearchLikeWithFunction("hamb", 5, data.PORT)
+	if err != nil {
+		log.Printf("Could not searchLikeWithFunction: %v", err)
+	}
+	log.Printf("count of found by Search Like with Function: %d", len(foundBySearchLikeWithFunction))
+	log.Printf("found by Search Like with Function: Hamburg: %v", foundBySearchLikeWithFunction)
 	elapsed := time.Since(start)
 	log.Printf("All operations took %s", elapsed)
 }
