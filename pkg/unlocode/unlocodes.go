@@ -3,6 +3,7 @@ package unlocode
 
 import (
 	"errors"
+	"log"
 	"maps"
 	"slices"
 	"strings"
@@ -23,6 +24,8 @@ type UnLocodeRepository interface {
 	FindByLocode(code string, amount int) (result []data.Unlocode, err error)
 	FindByNameAndProximity(name string, amount int, minSimilarity float32) (result []data.Unlocode, err error)
 	FindByNameAndProximityWithFunction(name string, amount int, minSimilarity float32, function data.Function) (result []data.Unlocode, err error)
+	SearchLike(pattern string, limit int) (result []data.Unlocode, err error)
+	SearchLikeWithFunction(pattern string, limit int, function data.Function) (result []data.Unlocode, err error)
 }
 
 type UnLocodeCollection struct {
@@ -129,6 +132,7 @@ func (c *UnLocodeCollection) FindByNameAndProximityWithFunction(name string, amo
 	}
 
 	sortedNames := sortByProximity(name, res)
+	log.Printf("sortedNames: %+v", sortedNames)
 
 	for _, v := range sortedNames {
 		for _, unlocode := range c.unlocodes {
@@ -147,10 +151,61 @@ func (c *UnLocodeCollection) FindByNameAndProximityWithFunction(name string, amo
 	return results, nil
 }
 
-/*
-Sorts the matches by proximity to the search term.
-The higher the score, the more similar the match is to the search term.
-*/
+func (c *UnLocodeCollection) SearchLike(pattern string, limit int) (results []data.Unlocode, err error) {
+	if pattern == "" {
+		return results, Err_Not_Found
+	}
+
+	lowerPattern := strings.ToLower(pattern)
+
+	for _, unlocode := range c.unlocodes {
+		if len(results) >= limit {
+			break
+		}
+		if strings.Contains(strings.ToLower(unlocode.LoCode), lowerPattern) ||
+			strings.Contains(strings.ToLower(unlocode.NameWoDiacritics), lowerPattern) {
+			results = append(results, unlocode)
+		}
+	}
+
+	if len(results) == 0 {
+		return results, Err_Not_Found
+	}
+
+	return results, nil
+}
+
+func (c *UnLocodeCollection) SearchLikeWithFunction(pattern string, limit int, function data.Function) (results []data.Unlocode, err error) {
+	if pattern == "" {
+		return results, Err_Not_Found
+	}
+
+	lowerPattern := strings.ToLower(pattern)
+
+	for _, unlocode := range c.unlocodes {
+		if len(results) >= limit {
+			break
+		}
+		if strings.Contains(strings.ToLower(unlocode.LoCode), lowerPattern) ||
+			strings.Contains(strings.ToLower(unlocode.NameWoDiacritics), lowerPattern) {
+			if unlocode.Function != nil {
+				for _, f := range *unlocode.Function {
+					if f == function {
+						results = append(results, unlocode)
+						break
+					}
+				}
+			}
+		}
+	}
+
+	if len(results) == 0 {
+		return results, Err_Not_Found
+	}
+
+	return results, nil
+}
+
 func sortByProximity(searchTerm string, matches []string) []string {
 	type scoredResult struct {
 		name  string
